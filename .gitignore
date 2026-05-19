@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environment
+venv/
+
+# Environment / secrets
+.env
+
+# Project runtime state (SQLite DB has personal goals + summaries; not for sharing)
+news.db
+
+# Scratch files
+bcd.py
+scratch.py
+
+# Personal notes — remove this line if you want this tracked in git
+Claude_analysis_on_me.md
+CLAUDE.md
+readmeme.md
+
+# OS / IDE
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.swp
