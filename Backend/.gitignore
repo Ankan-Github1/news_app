@@ -1,3 +1,5 @@
+
+
 # Python
 __pycache__/
 *.pyc
@@ -18,7 +20,7 @@ bcd.py
 scratch.py
 
 # Personal notes — remove this line if you want this tracked in git
-Claude_analysis_on_me.md
+readme2.md
 CLAUDE.md
 readmeme.md
 

@@ -2,7 +2,9 @@
 
 # print(articles)
 
-from src.core.filter_logic import articles
+from src.core.filter_logic import main_pipeline
+
+articles = main_pipeline()
 
 
 for article in articles:
