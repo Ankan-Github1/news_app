@@ -1,0 +1,31 @@
+# Pinned with >= rather than == : this is an application you deploy, not a
+# library others install alongside their own dependencies. Loose pins keep you
+# on security patches. When a deploy needs byte-identical installs, freeze this
+# into a lockfile (pip freeze > requirements.lock.txt) and install from that.
+
+# --- core: needed for everything ---------------------------------------------
+python-dotenv>=1.0.0
+requests>=2.31.0
+numpy>=1.26.0
+
+# --- sources ------------------------------------------------------------------
+newsapi-python>=0.2.7
+newspaper3k>=0.2.8
+lxml_html_clean>=0.1.0   # newspaper3k needs this since lxml 5.x split it out
+
+# --- embedding ----------------------------------------------------------------
+# Heavy. Pulls in torch: ~2GB on disk, ~500MB RAM once loaded. This is the
+# dependency that decides how big a server you need. If the box can't take it,
+# the ingest job runs elsewhere and only the web app deploys.
+sentence-transformers>=3.0.0
+
+# --- web ----------------------------------------------------------------------
+fastapi>=0.110.0
+uvicorn[standard]>=0.29.0
+jinja2>=3.1.0
+
+# Not listed on purpose:
+#   sqlite3  - Python standard library
+#   hashlib  - standard library
+#   ollama   - talked to over plain HTTP via requests; no SDK needed
+#   google-generativeai - same, plain HTTP. one less thing to break on a bump.
