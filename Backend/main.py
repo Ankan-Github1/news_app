@@ -1,11 +1,8 @@
 # from src.core.filter_logic import articles
-
 # print(articles)
 
 from src.core.filter_logic import main_pipeline
-
 articles = main_pipeline()
-
 
 for article in articles:
     print(f"Title: {article['title']}")

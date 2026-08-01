@@ -1,7 +1,7 @@
 #Services
 from src.services.embedings import cosine_similarity, get_or_compute_embedding
 from src.services.llm.summary import summarise_test
-from src.services.fetch_news import all_articles
+from src.services.fetch_news import fetch_articles
 
 #Storage
 from src.storage.db import init_db, insert_article, update_article_content, get_article_content, get_active_goals, insert_similarity, insert_summary
@@ -36,8 +36,10 @@ def get_or_fetch_article_text(url):
     return fetched
     
 def main_pipeline():
+    raw_articles = fetch_articles()
+
     #Important Checks
-    if not all_articles['articles']:
+    if not raw_articles:
         print("No articles found. Please check your API key and query parameters.")
         quit()
 
@@ -47,7 +49,7 @@ def main_pipeline():
     new_count = 0
     skipped_count = 0
 
-    for i, article in enumerate(all_articles['articles']):
+    for i, article in enumerate(raw_articles):
         article_id = insert_article(
             url=article['url'],
             title=article['title'],

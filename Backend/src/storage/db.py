@@ -75,6 +75,28 @@ def init_db():
             FOREIGN KEY (goal_id) REFERENCES goals(id)
         )
     """)
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS interactions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            article_id INTEGER NOT NULL,
+            goal_id INTEGER NOT NULL,
+            is_relevant INTEGER NOT NULL CHECK (is_relevant IN (0, 1)),
+            created_at TEXT NOT NULL,
+            FOREIGN KEY (article_id) REFERENCES articles(id),
+            FOREIGN KEY (goal_id) REFERENCES goals(id)
+        )
+    """)
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS watched (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            article_id INTEGER NOT NULL,
+            goal_id INTEGER NOT NULL,
+            is_watched INTEGER NOT NULL CHECK (is_watched IN (0, 1)),
+            created_at TEXT NOT NULL,
+            FOREIGN KEY (article_id) REFERENCES articles(id),
+            FOREIGN KEY (goal_id) REFERENCES goals(id)
+        )
+    """)
     conn.commit()
     conn.close()
 
