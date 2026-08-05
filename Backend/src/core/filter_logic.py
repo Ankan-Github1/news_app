@@ -11,18 +11,7 @@ from src.services.embedings import EMBED_MODEL_NAME
 from src.services.llm.summary import SUMMARISE_MODEL_NAME
 
 # get content
-from newspaper import Article, ArticleException
-from requests.exceptions import RequestException  
-
-def get_article_text(url):
-    try:
-        article = Article(url)
-        article.download()
-        article.parse()
-        return article.text
-    except (ArticleException, RequestException) as e:
-        print(f"Error fetching article from {url}: {e}")
-        return None
+from src.services.article_scrap import get_article_text
 
 
 def get_or_fetch_article_text(url):
@@ -41,7 +30,7 @@ def main_pipeline():
     #Important Checks
     if not raw_articles:
         print("No articles found. Please check your API key and query parameters.")
-        quit()
+        return []
 
     init_db()  # make sure articles table exists before inserting
 
@@ -57,10 +46,14 @@ def main_pipeline():
             source=article['source']['name'],
             published_at=article['publishedAt'],
         )
+
+
         if not article_id:
             skipped_count += 1
             continue
         new_count += 1
+
+        
 
         article_text = f"{article['title']} {article['description']}"
         article_embedding = get_or_compute_embedding(article_text)

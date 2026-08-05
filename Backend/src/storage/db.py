@@ -147,6 +147,20 @@ def get_article_content(url):
     return row[0] if row else None
 
 
+def get_article_id(url):
+    """Return the id of an already-stored article, or None if the url isn't in the table."""
+    url_hash = hash_url(url)
+    conn = _connect()
+    try:
+        row = conn.execute(
+            "SELECT id FROM articles WHERE url_hash = ?",
+            (url_hash,),
+        ).fetchone()
+    finally:
+        conn.close()
+    return row[0] if row else None
+
+
 def get_embedding(text, model_name):
     """Return cached float32 vector for (text, model_name), or None on cache miss."""
     text_hash = hash_text(text)
