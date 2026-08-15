@@ -1,5 +1,6 @@
-# Claude's parallel design folder — reference only, not part of the project
-# claude/
+Claude's parallel design folder — reference only, not part of the project
+claude/
 
 # Personal notes — remove this line if you want this tracked in git
 CLAUDE.md
+db_explained.html
