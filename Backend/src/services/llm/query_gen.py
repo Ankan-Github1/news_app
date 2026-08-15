@@ -33,19 +33,25 @@ def extract_queries(goal_text, attempts=3):
     {{"queries": ["...", "..."]}}"""
 
     for attempt in range(1, attempts + 1):
-        res = requests.post(
-            "http://localhost:11434/api/generate",
-            json={
-                "model": QUERY_MODEL_NAME,
-                "system": SYSTEM,
-                "prompt": prompt,
-                "stream": False,
-                "format": "json",
-                "options": {"temperature": 0.3, "num_ctx": 2048},
-            }
-        )
+        try:
+            res = requests.post(
+                "http://localhost:11434/api/generate",
+                json={
+                    "model": QUERY_MODEL_NAME,
+                    "system": SYSTEM,
+                    "prompt": prompt,
+                    "stream": False,
+                    "format": "json",
+                    "options": {"temperature": 0.3, "num_ctx": 2048},
+                },
+                timeout=60
+            )
+            res.raise_for_status()
+            body = res.json()
+        except (requests.RequestException, ValueError) as e:
+            print(f"[query_gen] attempt {attempt}: request failed: {e}")
+            continue
 
-        body = res.json()
         raw = body.get("response")
         if raw is None:
             print(f"[query_gen] attempt {attempt}: no 'response' field, got {body}")

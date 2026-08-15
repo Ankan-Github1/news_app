@@ -1,4 +1,5 @@
 import sqlite3
+import json
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -42,10 +43,13 @@ def init_db():
             PRIMARY KEY (text_hash, model_name)
         )
     """)
+
+    #query is a list, and i want it as a list, i'll store it in a string format, using json library to convert list to string and vice versa, so that i can store it in the db and retrieve it as a list
     conn.execute("""
         CREATE TABLE IF NOT EXISTS goals (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             text TEXT NOT NULL,
+            query TEXT NOT NULL,    
             superseded_by INTEGER,
             FOREIGN KEY (superseded_by) REFERENCES goals(id)
         )
@@ -55,9 +59,10 @@ def init_db():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             article_id INTEGER NOT NULL,
             goal_id INTEGER NOT NULL,
+            model_name TEXT NOT NULL,
             score REAL NOT NULL,
             created_at TEXT NOT NULL,
-            UNIQUE (article_id, goal_id),
+            UNIQUE (article_id, goal_id, model_name),
             FOREIGN KEY (article_id) REFERENCES articles(id),
             FOREIGN KEY (goal_id) REFERENCES goals(id)
         )
@@ -196,13 +201,14 @@ def save_embedding(text, vector, model_name):
         conn.close()
 
 
-def insert_goal(text):
-    """Insert a new goal. Returns the new goal_id."""
+def insert_goal(text, query):
+    """Insert a new goal and its queries. Returns the new goal_id."""
     conn = _connect()
+    query = json.dumps(query)  # Convert the list to a JSON string
     try:
         cur = conn.execute(
-            "INSERT INTO goals (text) VALUES (?)",
-            (text,),
+            "INSERT INTO goals (text, query) VALUES (?, ?)",
+            (text, query),
         )
         conn.commit()
         return cur.lastrowid
@@ -211,28 +217,45 @@ def insert_goal(text):
 
 
 def get_active_goals():
-    """Return [(goal_id, text), ...] for goals that have not been superseded."""
+    """Return [(goal_id, text, queries), ...] for goals that have not been superseded."""
     conn = _connect()
     try:
         rows = conn.execute(
-            "SELECT id, text FROM goals WHERE superseded_by IS NULL"
+            "SELECT id, text, query FROM goals WHERE superseded_by IS NULL"
         ).fetchall()
     finally:
         conn.close()
     return rows
 
 
-def insert_similarity(article_id, goal_id, score):
+def supersede_goal(old_goal_id, new_goal_id):
+    """For the superseded_by row of a old goal, it changes that from null/already_changed_goal to id of new goal"""
+
+    conn = _connect()
+    try:
+        cur = conn.execute(
+            """
+                UPDATE goals SET superseded_by = ? WHERE id = ?
+            """,
+            (new_goal_id, old_goal_id)
+        )
+        conn.commit()
+    finally:
+        conn.close()
+    return cur.rowcount > 0
+
+
+def insert_similarity(article_id, goal_id, model_name, score):
     """Store a (article, goal) similarity score. Returns True if newly inserted, False if the pair already had a score."""
     conn = _connect()
     created_at = datetime.now(timezone.utc).isoformat()
     try:
         conn.execute(
             """
-            INSERT INTO similarity (article_id, goal_id, score, created_at)
-            VALUES (?, ?, ?, ?)
+            INSERT INTO similarity (article_id, goal_id, model_name, score, created_at)
+            VALUES (?, ?, ?, ?, ?)
             """,
-            (article_id, goal_id, score, created_at),
+            (article_id, goal_id, model_name, score, created_at),
         )
         conn.commit()
         return True
@@ -310,10 +333,13 @@ def clear_pipeline_data():
 
 if __name__ == "__main__":
     init_db()
-    insert_article(
-        url="https://example.com/test-article",
-        title="Test Article",
-        description="A test description",
-        source="test-source",
-        published_at="2026-04-30T12:00:00Z",
-    )
+    # # insert_article(
+    #     url="https://example.com/test-article",
+    #     title="Test Article",
+    #     description="A test description",
+    #     source="test-source",
+    #     published_at="2026-04-30T12:00:00Z",
+    # )
+
+    rows = get_active_goals()
+    print(rows)
